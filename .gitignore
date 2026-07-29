@@ -32,3 +32,13 @@
     # Logs & Databases
     *.sqlite3
     *.log
+
+.env
+**/.env
+__pycache__/
+*.pyc
+*.log
+server_logs.txt
+venv/
+.venv/
+node_modules/
