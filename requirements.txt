@@ -1,0 +1,16 @@
+# Web Framework
+    fastapi
+    uvicorn
+    
+    # Database
+    sqlalchemy
+    psycopg2-binary
+    
+    # LLM & Validation
+    litellm
+    pydantic
+    python-dotenv
+    
+    # Data & ML
+    pandas
+    requests

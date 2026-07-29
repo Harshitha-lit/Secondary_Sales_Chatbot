@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+litellm
+pydantic
+requests
+pandas
+python-dotenv

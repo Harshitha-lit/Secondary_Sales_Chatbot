@@ -1,0 +1,34 @@
+# Node & Frontend
+    node_modules/
+    dist/
+    .npm/
+    
+    # Python & Backend
+    __pycache__/
+    *.py[cod]
+    *$py.class
+    *.so
+    venv/
+    .venv/
+    env/
+    .env
+    
+    # Virtual Environments
+    .Python
+    build/
+    develop-eggs/
+    dist/
+    downloads/
+    eggs/
+    .eggs/
+    lib/
+    lib64/
+    parts/
+    sdist/
+    var/
+    wheels/
+    share/python-wheels/
+    
+    # Logs & Databases
+    *.sqlite3
+    *.log

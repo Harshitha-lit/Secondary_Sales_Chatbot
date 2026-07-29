@@ -1,0 +1,6 @@
+{
+  "recent_months": 3,
+  "min_active_cases": 50,
+  "lapse_frac": 0.05,
+  "decline_pct": 0.20
+}
