@@ -16,14 +16,63 @@ body {
 
 .app-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 92vh;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 4vh auto;
   background-color: var(--surface-color);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border-radius: 16px;
   overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #F3F4F6;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.new-chat-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.session-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.session-item:hover, .session-item.active {
+  background-color: #E5E7EB;
+  color: var(--text-primary);
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: calc(100% - 250px);
 }
 
 .app-header {
@@ -42,6 +91,13 @@ body {
   margin: 0.5rem 0 0 0;
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+.limitation-notice {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  margin-top: 0.25rem;
+  font-style: italic;
 }
 
 .chat-container {

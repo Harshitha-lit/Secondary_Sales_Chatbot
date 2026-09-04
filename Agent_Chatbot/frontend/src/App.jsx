@@ -139,7 +139,74 @@ function App() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [typingIndex, setTypingIndex] = useState(-1);
+  const [currentSessionId, setCurrentSessionId] = useState(() => localStorage.getItem('currentSessionId') || null);
+  const [sessions, setSessions] = useState([]);
   const messagesEndRef = useRef(null);
+
+  const fetchSessions = async () => {
+    try {
+      const response = await axios.get(`${API_URL}s`); // GET /chats
+      setSessions(response.data);
+    } catch (error) {
+      console.error("Error fetching sessions", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  useEffect(() => {
+    if (currentSessionId) {
+      localStorage.setItem('currentSessionId', currentSessionId);
+    }
+  }, [currentSessionId]);
+
+  const loadSession = async (sessionId) => {
+    if (loading) return;
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}s/${sessionId}`); // GET /chats/{sessionId}
+      const loadedMessages = response.data.messages.map(m => {
+        let textAnswer = "";
+        let evidenceObj = undefined;
+        let chartObj = undefined;
+        let suggestObj = undefined;
+
+        if (m.role === 'assistant') {
+          if (typeof m.content === 'string') {
+            textAnswer = m.content;
+          } else if (typeof m.content === 'object' && m.content !== null) {
+            textAnswer = m.content.text_answer || "";
+            evidenceObj = m.content.evidence;
+            chartObj = m.content.chart_data;
+            suggestObj = m.content.suggested_questions;
+          }
+        }
+
+        return {
+          role: m.role,
+          content: m.role === 'user' ? m.content : undefined,
+          text_answer: m.role === 'assistant' ? textAnswer : undefined,
+          evidence: evidenceObj,
+          chart_data: chartObj,
+          suggested_questions: suggestObj
+        };
+      });
+      setMessages(loadedMessages);
+      setCurrentSessionId(sessionId);
+    } catch (error) {
+      console.error("Error loading session", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startNewSession = () => {
+    setCurrentSessionId(null);
+    localStorage.removeItem('currentSessionId');
+    setMessages([]);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -163,8 +230,18 @@ function App() {
     try {
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content || m.text_answer || "" }));
       
-      const response = await axios.post(API_URL, { messages: apiMessages });
+      const payload = { messages: apiMessages };
+      if (currentSessionId) {
+        payload.session_id = currentSessionId;
+      }
+      
+      const response = await axios.post(API_URL, payload);
       const data = response.data;
+
+      if (data.session_id && data.session_id !== currentSessionId) {
+        setCurrentSessionId(data.session_id);
+        fetchSessions();
+      }
 
       setMessages([...newMessages, { 
         role: 'assistant', 
@@ -188,79 +265,93 @@ function App() {
 
   return (
     <div className="app-container">
-      <header className="app-header">
-        <h1>Intelligent Business Agent</h1>
-        <p>Ask me about Churn Risk & Forecasts</p>
-      </header>
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <span>Chat History</span>
+          <button className="new-chat-btn" onClick={startNewSession}>New Chat</button>
+        </div>
+        {sessions.map(s => (
+          <div 
+            key={s.session_id} 
+            className={`session-item ${currentSessionId === s.session_id ? 'active' : ''}`}
+            onClick={() => loadSession(s.session_id)}
+          >
+            Session {s.session_id.substring(0, 8)}...
+          </div>
+        ))}
+      </div>
       
-      <main className="chat-container">
-        <div className="messages-list">
-          {messages.length === 0 && (
-            <div className="empty-state">
-              <p>Hello! I am your AI Business Assistant</p>
-            </div>
-          )}
-          {messages.map((msg, index) => {
-            const isTyping = typingIndex === index;
-            const isComplete = !isTyping;
-            
-            return (
-              <div key={index} className={`message-wrapper ${msg.role}`}>
-                <div className="message-avatar">
-                  {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
-                </div>
-                <div className="message-content">
-                  <div className="message-text markdown-body">
-                    {msg.role === 'user' ? (
-                      msg.content
-                    ) : (
-                      isTyping ? (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{msg.text_answer}</ReactMarkdown>
+      <div className="main-content">
+        <header className="app-header">
+          <h1>Intelligent Business Agent</h1>
+          <p>Ask me about Churn Risk & Forecasts</p>
+          <div className="limitation-notice">Note: Depending on prompt complexity, loading time may be high.</div>
+        </header>
+        
+        <main className="chat-container">
+          <div className="messages-list">
+            {messages.length === 0 && (
+              <div className="empty-state">
+                <p>Hello! I am your AI Business Assistant</p>
+              </div>
+            )}
+            {messages.map((msg, index) => {
+              const isTyping = typingIndex === index;
+              
+              return (
+                <div key={index} className={`message-wrapper ${msg.role}`}>
+                  <div className="message-avatar">
+                    {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
+                  </div>
+                  <div className="message-content">
+                    <div className="message-text markdown-body">
+                      {msg.role === 'user' ? (
+                        msg.content
                       ) : (
                         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{msg.text_answer}</ReactMarkdown>
-                      )
+                      )}
+                    </div>
+                    
+                    {msg.role === 'assistant' && (
+                      <>
+                        <ChartRenderer chartData={msg.chart_data} />
+                        <EvidenceCard evidence={msg.evidence} />
+                        <SuggestedQuestions 
+                          questions={msg.suggested_questions} 
+                          onSelect={(q) => handleSend(q)} 
+                        />
+                      </>
                     )}
                   </div>
-                  
-                  {msg.role === 'assistant' && (
-                    <>
-                      <ChartRenderer chartData={msg.chart_data} />
-                      <EvidenceCard evidence={msg.evidence} />
-                      <SuggestedQuestions 
-                        questions={msg.suggested_questions} 
-                        onSelect={(q) => handleSend(q)} 
-                      />
-                    </>
-                  )}
+                </div>
+              );
+            })}
+            {loading && (
+              <div className="message-wrapper assistant">
+                <div className="message-avatar"><Bot size={20} /></div>
+                <div className="message-content">
+                  <div className="loading-dots">Thinking<span>.</span><span>.</span><span>.</span></div>
                 </div>
               </div>
-            );
-          })}
-          {loading && (
-            <div className="message-wrapper assistant">
-              <div className="message-avatar"><Bot size={20} /></div>
-              <div className="message-content">
-                <div className="loading-dots">Thinking<span>.</span><span>.</span><span>.</span></div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-        
-        <div className="input-area">
-          <input 
-            type="text" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type your question here..."
-            disabled={loading}
-          />
-          <button onClick={handleSend} disabled={loading || !input.trim()}>
-            <Send size={20} />
-          </button>
-        </div>
-      </main>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          
+          <div className="input-area">
+            <input 
+              type="text" 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Type your question here..."
+              disabled={loading}
+            />
+            <button onClick={handleSend} disabled={loading || !input.trim()}>
+              <Send size={20} />
+            </button>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

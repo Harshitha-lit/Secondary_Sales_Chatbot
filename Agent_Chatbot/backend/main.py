@@ -86,12 +86,16 @@ async def chat_endpoint(request: ChatRequest, db: Session = Depends(database.get
         if not isinstance(structured_response, dict):
             structured_response = {"text_answer": str(structured_response)}
         elif "text_answer" not in structured_response:
-            # LLM returned valid JSON, but ignored our exact schema keys. 
-            # We dump the LLM's hallucinated JSON into a markdown block so the user can still read the raw data!
-            hallucinated_data = json.dumps(structured_response, indent=2)
+            # Check if there is an error key inside the hallucinated dict
+            if "error" in structured_response:
+                friendly_text = f"An error occurred while retrieving data: {structured_response['error']}"
+            else:
+                hallucinated_data = json.dumps(structured_response, indent=2)
+                friendly_text = f"I processed your request, but the data could not be formatted properly. Here are the raw results:\n```json\n{hallucinated_data}\n```"
+                
             structured_response = {
-                "text_answer": f"Here is the raw data I found:\n```json\n{hallucinated_data}\n```\n*(Note: The AI failed to format this into a paragraph, but the data is correct.)*",
-                "evidence": {"sources": ["Raw Data Recovery"], "confidence": 0.5, "provenance": "The AI provided data but ignored the visual formatting instructions."},
+                "text_answer": friendly_text,
+                "evidence": {"sources": ["System Check"], "confidence": 0.5, "provenance": "Data was retrieved but visual formatting failed."},
                 "chart_data": {"render_chart": False, "type": "bar", "data": []},
                 "suggested_questions": []
             }

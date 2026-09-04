@@ -1,0 +1,32 @@
+,Intelligent Business Agent ,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5
+0,Ask me about Churn Risk & Forecasts ,,,,,
+1,,,,,,
+2,Context,Secondary Sales Data - Jan 2026 to April 2026,,,,
+3,,,,,,
+4,Question,followup question,Status,Return Answer,Remarks,Expected Business Use Case
+5,What were the total secondary sales in January? ,,P,returned with secondary data ,,
+6,,asked about the confidence scoring metrics ,P,returned with scoring criteria,,
+7,,asked about insights of January insights,F,,screen was reset,
+8,on fresh session asked about the complete insights of January 2026,,P,returned with all the information on january key information,,
+9,asked about the risk areas of in terms of products and distributors,,P,returned with information on products and distributor risk areas along with demographic details,"if no activity, session was reset",As a Business User i want to be see my session wise history and an instruction to user about prompt limitation based on the complexity
+10,what is the difference between january 2026 and april 2026 secondary sales - where it went - or +,,P,returned only negative data where quantity and net amount reduced between january 2026 and feb 2026,,
+11,,what is the incline then,P,returned with inclined data between feb 2026 and march 2026,but im expecting between jan and april,
+12,,but im asking between jan and april what is the incline,P,"Between January 2026 and April 2026, secondary sales showed a decline with no incline in either quantity or net amount:",numbers are accurate between row 12 and 14,
+13,,can you give me a graph from the month of january to april 2026 that what is decline and incline,P, month-wise trend for secondary sales (January 2026 to April 2026) in table format,,
+14,,"but asked in graph, you gave in table format",P,"Graphical representation is not supported. However, here is the data in a table format for January 2026 to April 2026 showing declines and inclines:",,
+15,,Show the top distributors with the highest sales decline between January and April 2026.,P,top 10 distributors with the highest sales decline between January 2026 and April 2026 in terms of quantity and net amount:,,
+16,,Show the churn risk for outlets under these distributors.,P,top outlets under the high-decline distributors with the highest churn risk and sales decline between January 2026 and April 2026:,,
+17,,give me in incremental - high to low data approach of which outlet and distributor months inactive,F,"Here is the raw data I found:
+
+{
+  ""error"": ""No data found for the given query.""
+}
+(Note: The AI failed to format this into a paragraph, but the data is correct.)",,
+18,give me an incremental - high to low data approach of which outlet and distributor months are inactive,,F,loading (Thinking),new session,
+19,give me an incremental - high to low data approach of which outlet and distributor months are inactive between jan and april 2026,,F,loading (Thinking),new session,
+20,,,,,,
+21,,,,,,
+22,,,,,,
+23,,,,,,
+24,Current Limitation,,Runs in local host,,,
+25,,,loading time is high almost for every prompt depending on prompt complexity,,,
