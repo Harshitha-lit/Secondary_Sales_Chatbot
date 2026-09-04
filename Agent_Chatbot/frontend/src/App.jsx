@@ -276,7 +276,7 @@ function App() {
             className={`session-item ${currentSessionId === s.session_id ? 'active' : ''}`}
             onClick={() => loadSession(s.session_id)}
           >
-            Session {s.session_id.substring(0, 8)}...
+            {s.title || "New Chat"}
           </div>
         ))}
       </div>

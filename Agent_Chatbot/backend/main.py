@@ -120,7 +120,25 @@ async def chat_endpoint(request: ChatRequest, db: Session = Depends(database.get
 @app.get("/chats")
 def get_chats(skip: int = 0, limit: int = 50, db: Session = Depends(database.get_db)):
     sessions = crud.get_chat_sessions(db, skip=skip, limit=limit)
-    return [{"session_id": s.session_id, "created_at": s.created_at, "updated_at": s.updated_at} for s in sessions]
+    result = []
+    for s in sessions:
+        first_msg = db.query(models.ChatMessage).filter(
+            models.ChatMessage.session_id == s.session_id, 
+            models.ChatMessage.role == "user"
+        ).order_by(models.ChatMessage.created_at.asc()).first()
+        
+        title = "New Chat"
+        if first_msg and isinstance(first_msg.content, str):
+            words = first_msg.content.split()
+            title = " ".join(words[:4]) + ("..." if len(words) > 4 else "")
+            
+        result.append({
+            "session_id": s.session_id, 
+            "created_at": s.created_at, 
+            "updated_at": s.updated_at,
+            "title": title
+        })
+    return result
 
 @app.get("/chats/{session_id}")
 def get_chat_history(session_id: str, db: Session = Depends(database.get_db)):
